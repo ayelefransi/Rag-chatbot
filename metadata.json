@@ -1,0 +1,5 @@
+{
+  "name": "Gemini RAG Chatbot",
+  "description": "A client-side RAG (Retrieval-Augmented Generation) chatbot leveraging Gemini's massive context window to analyze uploaded documents and answer domain-specific questions.",
+  "requestFramePermissions": []
+}
