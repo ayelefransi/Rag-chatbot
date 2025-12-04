@@ -1,3 +1,5 @@
+export type Language = 'en' | 'am';
+
 export interface Message {
   id: string;
   role: 'user' | 'model';
@@ -25,7 +27,7 @@ export interface AppState {
   documents: UploadedDocument[];
   messages: Message[];
   isLoading: boolean;
-  apiKey: string | null;
+  language: Language;
   modelConfig: {
     temperature: number;
     maxOutputTokens: number;
