@@ -4,13 +4,14 @@ import Sidebar from './components/Sidebar';
 import MessageBubble from './components/MessageBubble';
 import { Message, UploadedDocument, Language } from './types';
 import { generateRAGResponse } from './services/gemini';
-import { Send, AlertTriangle, Sparkles } from 'lucide-react';
+import { Send, AlertTriangle, Menu } from 'lucide-react';
 import { t } from './utils/translations';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const App: React.FC = () => {
   const [documents, setDocuments] = useState<UploadedDocument[]>([]);
   const [language, setLanguage] = useState<Language>('en');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -122,7 +123,7 @@ const App: React.FC = () => {
   return (
     <Router>
       <div className="flex h-screen bg-slate-50 font-sans overflow-hidden">
-        {/* Sidebar */}
+        {/* Responsive Sidebar */}
         <Sidebar 
           documents={documents} 
           setDocuments={setDocuments}
@@ -131,32 +132,44 @@ const App: React.FC = () => {
           onClearChat={handleClearChat}
           language={language}
           setLanguage={setLanguage}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
         />
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col h-full relative z-0">
+        <div className="flex-1 flex flex-col h-full relative z-0 w-full">
           
           {/* Header */}
-          <header className="h-16 border-b border-slate-200 bg-white/80 backdrop-blur-md flex items-center justify-between px-6 flex-shrink-0 z-10 sticky top-0 shadow-sm">
-            <div>
-              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                {t(language, 'chatSession')}
-              </h2>
-              <p className="text-xs text-slate-500 font-medium">
-                {documents.length} {t(language, 'contextLoaded')}
-              </p>
+          <header className="h-16 border-b border-slate-200 bg-white/80 backdrop-blur-md flex items-center justify-between px-4 md:px-6 flex-shrink-0 z-10 sticky top-0 shadow-sm">
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => setIsSidebarOpen(true)}
+                className="md:hidden text-slate-500 hover:text-slate-800 p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+                aria-label="Open Menu"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              <div>
+                <h2 className="text-base md:text-lg font-bold text-slate-800 flex items-center gap-2">
+                  {t(language, 'chatSession')}
+                </h2>
+                <p className="text-[10px] md:text-xs text-slate-500 font-medium">
+                  {documents.length} {t(language, 'contextLoaded')}
+                </p>
+              </div>
             </div>
             
             {!apiKey && (
-               <div className="text-xs font-bold text-red-500 bg-red-50 px-3 py-1.5 rounded-full border border-red-200 flex items-center gap-2">
-                <AlertTriangle className="w-3.5 h-3.5" />
-                API_KEY Missing in Env
+               <div className="text-[10px] md:text-xs font-bold text-red-500 bg-red-50 px-3 py-1.5 rounded-full border border-red-200 flex items-center gap-2">
+                <AlertTriangle className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                <span className="hidden sm:inline">API_KEY Missing</span>
+                <span className="sm:hidden">No Key</span>
               </div>
             )}
           </header>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-6 scroll-smooth bg-gradient-to-b from-slate-50 to-white">
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth bg-gradient-to-b from-slate-50 to-white">
             <div className="max-w-3xl mx-auto pb-4">
               <AnimatePresence>
                 {messages.map(msg => (
@@ -199,7 +212,7 @@ const App: React.FC = () => {
           </div>
 
           {/* Input Area */}
-          <div className="p-5 bg-white border-t border-slate-100 flex-shrink-0 shadow-[0_-5px_20px_-10px_rgba(0,0,0,0.05)] z-20">
+          <div className="p-3 md:p-5 bg-white border-t border-slate-100 flex-shrink-0 shadow-[0_-5px_20px_-10px_rgba(0,0,0,0.05)] z-20">
             <div className="max-w-3xl mx-auto relative">
               <form onSubmit={handleSendMessage} className="relative group">
                 <input
@@ -207,19 +220,19 @@ const App: React.FC = () => {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder={documents.length > 0 ? t(language, 'placeholderReady') : t(language, 'placeholderEmpty')}
-                  className="w-full pl-5 pr-14 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all shadow-inner text-slate-800 placeholder:text-slate-400 disabled:opacity-50"
+                  className="w-full pl-4 md:pl-5 pr-12 md:pr-14 py-3 md:py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all shadow-inner text-sm md:text-base text-slate-800 placeholder:text-slate-400 disabled:opacity-50"
                   disabled={isLoading}
-                  autoFocus
+                  autoFocus={window.innerWidth > 768} // Only autofocus on desktop
                 />
                 <button
                   type="submit"
                   disabled={!input.trim() || isLoading}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-brand-600 text-white rounded-xl hover:bg-brand-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-brand-500/30 transform active:scale-95"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 md:p-2.5 bg-brand-600 text-white rounded-xl hover:bg-brand-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-brand-500/30 transform active:scale-95"
                 >
                   <Send className="w-4 h-4" />
                 </button>
               </form>
-              <p className="text-[10px] text-center text-slate-400 mt-3 font-medium opacity-70">
+              <p className="text-[10px] text-center text-slate-400 mt-2 md:mt-3 font-medium opacity-70">
                 {t(language, 'disclaimer')}
               </p>
             </div>
